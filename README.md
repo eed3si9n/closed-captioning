@@ -22,7 +22,7 @@ this creates a configuration to grab tweets as you.
 
 ### application.config
 
-create `conf` directory, and create a file named `application.conf`:
+under `conf` directory create a file named `application.conf`:
 
 ```
 closed-captioning {

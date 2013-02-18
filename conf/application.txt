@@ -1,0 +1,20 @@
+closed-captioning {
+  websocket {
+    port = 5679
+  }
+
+  irc {
+    nickname = "your_bot_name"
+    username = "your_bot_name"
+    hostname = "irc.freenode.net"
+    port = 6667
+    encoding = "UTF-8"
+    channel = "##your_channel"
+  }
+
+  twitter {
+    search-query = "#scala"
+    count = 5
+    interval = 60s
+  }
+}
