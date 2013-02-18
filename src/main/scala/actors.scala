@@ -7,11 +7,13 @@ import unfiltered.netty.websockets.{WebSocket, Text, Binary}
 import collection.mutable
 import java.nio.channels.ClosedChannelException
 
+// http://docs.jboss.org/netty/3.2/api/org/jboss/netty/channel/Channel.html
 case class SocketActor(socket: WebSocket) extends Actor {
   def receive = {
     case Text(txt)   =>
       try {
-        socket.send(txt)  
+        if (socket.channel.isOpen) socket.send(txt)
+        else self.stop()  
       }
       catch {
         case e: ClosedChannelException => self.stop()
@@ -19,11 +21,11 @@ case class SocketActor(socket: WebSocket) extends Actor {
       }
     case Binary(buf) =>
       try {
-        socket.send(buf)  
+        if (socket.channel.isOpen) socket.send(buf)
+        else self.stop()  
       }
       catch {
         case e: ClosedChannelException => self.stop()
-        case e: Throwable => throw e
       }
     case _      => // log.info("received unknown message")
   }
@@ -39,7 +41,12 @@ trait BroadcastActor {
   }
   def broadcast(txt: Text) {
     sockets foreach { socket =>
-      socket ! txt
+      try {
+        socket ! txt
+      }
+      catch {
+        case e: ActorInitializationException => sockets -= socket
+      }
     }
   }
 }
