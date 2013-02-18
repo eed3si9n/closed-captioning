@@ -3,7 +3,7 @@ package com.eed3si9n.cc
 import akka.actor._
 import akka.util.duration._
 import akka.dispatch.Future
-import unfiltered.netty.websockets.{WebSocket, Text, Binary}
+import unfiltered.netty.websockets.{WebSocket, Text, Binary, Msg}
 import collection.mutable
 import java.nio.channels.ClosedChannelException
 
@@ -27,36 +27,32 @@ case class SocketActor(socket: WebSocket) extends Actor {
       catch {
         case e: ClosedChannelException => self.stop()
       }
-    case _      => // log.info("received unknown message")
+    case x => println("received unknown message" + x.toString)
   }
 }
 
-case class AddSocket(socket: ActorRef)
-case class RemoveSocket(socket: ActorRef)
-trait BroadcastActor {
-  val sockets = mutable.Set[ActorRef]()
-  val addRemoveSocket: Actor.Receive = {
-    case AddSocket(socket) => sockets += socket
-    case RemoveSocket(socket) => sockets -= socket
-  }
-  def broadcast(txt: Text) {
-    sockets foreach { socket =>
-      try {
-        socket ! txt
+case class BroadcastActor() extends Actor {
+  def sockets = Actor.registry.actorsFor[SocketActor] filter {_.isRunning}
+  def receive = {
+    case msg: Msg =>
+      sockets foreach { socket =>
+        try {
+          socket ! msg
+        }
+        catch {
+          case e: ActorInitializationException => e.printStackTrace
+        }
       }
-      catch {
-        case e: ActorInitializationException => sockets -= socket
-      }
-    }
+    case x => println("received unknown message" + x.toString)
   }
 }
 
 case class Grep(q: String, count: Int)
-case class TweetActor() extends Actor with BroadcastActor {
+case class TweetActor(bcast: ActorRef) extends Actor {
   val twt = Twt()
   val seen = mutable.Set[BigDecimal]()
 
-  def receive = addRemoveSocket orElse {
+  def receive = {
     case Grep(q, count) =>
       twt.auth_token map { t =>
         val statuses = twt.grep(q, count)(t)
@@ -64,12 +60,13 @@ case class TweetActor() extends Actor with BroadcastActor {
           // skip the retweets and already seen ones
           if (!s.status.startsWith("RT ") &&  !seen.contains(s.id)) {
             seen += s.id
-            broadcast(Text("twitter|" + s.screenName + "|" + s.profileImageUrl + "|" + s.status))
+            bcast ! Text("twitter|" + s.screenName + "|" + s.profileImageUrl + "|" + s.status)
           } // if
         }
       } getOrElse {
         println("no access token!")
       }
+    case x => println("received unknown message" + x.toString)
   }
 }
 
@@ -85,13 +82,13 @@ case class TimerActor(q: String, count: Int, intervalMSec: Long, tweet: ActorRef
 }
 
 case class IrcActor(encoding: String, nickName: String, userName: String,
-  hostName: String, port: Int, channel: String) extends Actor with irc.IrcClient with BroadcastActor {
+  hostName: String, port: Int, channel: String, bcast: ActorRef) extends Actor with irc.IrcClient {
   joinChannel(channel)
-  def receive = addRemoveSocket orElse {
-    case _      => // log.info("received unknown message")
+  def receive = {
+    case x => println("received unknown message" + x.toString)
   }
   override def onMessage(message: irc.Message) {
-    broadcast(Text("irc|" + message.nickName + "|_|" + message.text))
+    bcast ! Text("irc|" + message.nickName + "|_|" + message.text)
   }
   override def postStop() {
     disconnect

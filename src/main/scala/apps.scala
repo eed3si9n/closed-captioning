@@ -16,13 +16,15 @@ object App {
   def main(args: Array[String]) {
     val setting = new CCSetting(ConfigFactory.load())
 
-    val tweetactor = actorOf(TweetActor()).start()
+    val broadcastactor = actorOf(BroadcastActor()).start()
+    val tweetactor = actorOf(TweetActor(broadcastactor)).start()
     val timeractor = actorOf(TimerActor(
       setting.twitter.searchQuery, setting.twitter.count,
       setting.twitter.interval, tweetactor)).start()
     val ircactor = actorOf(IrcActor(
       setting.irc.encoding, setting.irc.nickname, setting.irc.username,
-      setting.irc.hostname, setting.irc.port, setting.irc.channel
+      setting.irc.hostname, setting.irc.port, setting.irc.channel,
+      broadcastactor
     )).start()
     timeractor ! StartTimer
     println("ready!")
@@ -32,13 +34,9 @@ object App {
         case Open(s) =>
           val socketactor1 = actorOf(SocketActor(s)).start()
           socketactor1.id = socketActorName(s)
-          tweetactor ! AddSocket(socketactor1)
-          ircactor ! AddSocket(socketactor1)
         case Message(_, _) =>
         case Close(s) =>
           registry.actorsFor(socketActorName(s)) map { actor =>
-            tweetactor ! RemoveSocket(actor)
-            ircactor ! RemoveSocket(actor)
             actor.stop
           }
         case Error(s, e) =>
