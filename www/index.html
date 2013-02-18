@@ -4,74 +4,102 @@
     <title>closed-captioning</title>
     <style type="text/css">
       * { margin:0; padding:0; }
-      body { font-size: 24px; font-family:helvetica, sans serif; padding:1em; color:#333; }
-      input[type='text'] { font-size:24px; } #debug { font-size:16px; color:#ccc; }
-      ul { list-style:none; }
-      .who { color:#FF00C3; }
+      body {
+        font-size: 24px;
+        font-family: helvetica, sans serif;
+        padding:1em;
+        color:#333;
+      }
+      #debug {
+        font-size: 16px;
+        color:#ccc;
+      }
+      ul {
+        list-style: none;
+      }
+      .who {
+        color:#FF00C3;
+      }
     </style>
-    <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   </head>
   <body>
-    <form id="frm">
-      <div><input type="button" value="toogle connection" id="tooglr" /></div>
-    </form>
-    <div id="debug"></div>
     <ul></ul>
+    <div id="debug"></div>
     <script type="text/javascript">
-(function(jq)　{
- var socket, host = "ws://localhost:5679/";
-
-  var supported = function() { return window.WebSocket || window.MozWebSocket; }
-  , newWebSocket = function(uri) { return window.WebSocket ?
-    new WebSocket(uri) : new MozWebSocket(uri)
-   }
-  , createSocket = function(uri) {
-    if(supported()) {
-       window.socket = socket = newWebSocket(uri);
-       socket.onmessage = function(e) {
-         var msg = e.data.split("|"), who = msg.shift(), what =  msg.join("|");
-         jq('ul').first().prepend(['<li><span class="who">',who,'</span> ', what, '</li>'].join(""));
-       }
-       socket.onopen = function(e) {
-         debug('connection open')
-       }
-       socket.onclose = function(e) {
-         debug('connection closed');
-       }
-     } else {
-       alert("your browser does not support web sockets. try chrome.");
-     }
-  }
-  , debug = function(msg) { jq("#debug").html(msg); }
-  , isOpen = function() { return socket ?
-    socket.readyState == (window.WebSocket ? WebSocket.OPEN : MozWebSocket.OPEN) : false;
-  }
-  , send = function(message) {
-    if(!supported()) { return; }
-    if(isOpen()) {
-      socket.send(message);
-    } else {
-      alert("socket is not open");
+$(document).ready(function() {
+  var CC = {
+    host: "ws://localhost:5679/",
+    supported: function() {
+      return window.WebSocket || window.MozWebSocket;
+    },
+    newWebSocket: function(uri) {
+      return window.WebSocket ? new WebSocket(uri) : new MozWebSocket(uri)
+    },
+    createSocket: function(uri) {
+      var me = this;
+      if(me.supported()) {
+         window.socket = me.socket = me.newWebSocket(uri);
+         me.socket.onmessage = me.onSocketMessage;
+         me.socket.onopen = function(e) {
+           me.debug('connection open')
+         }
+         me.socket.onclose = function(e) {
+           me.debug('connection closed');
+         }
+       } else {
+         alert("your browser does not support web sockets. try chrome.");
+       } // if-else
+    },
+    onSocketMessage: function(e) {
+      var me = this;
+      var msg = e.data.split("|");
+      var who = msg.shift();
+      var what =  msg.join("|");
+      $('ul').first().prepend(['<li><span class="who">',who,'</span> ', what, '</li>'].join(""));
+    },
+    debug: function(msg) {
+      $("#debug").html(msg);
+    },
+    isOpen: function() {
+      var me = this;
+      return me.socket ? me.socket.readyState == (window.WebSocket ? WebSocket.OPEN : MozWebSocket.OPEN) : false;
+    },
+    send: function(message) {
+      var me = this;
+      if(!me.supported()) { return; }
+      if(me.isOpen()) {
+        me.socket.send(message);
+      } else {
+        alert("socket is not open");
+      } // if-else
+    },
+    closeSocket: function() {
+      var me = this;
+      if(me.socket) { me.socket.close(); }
+    },
+    openSocket: function() {
+      var me = this;
+      if(me.isOpen()) {
+         alert('socket already open');
+        return;
+      }
+      me.createSocket(me.host);
+    },
+    toggleConnection: function() {
+      var me = this;
+      if(me.isOpen()) { me.closeSocket(); }
+      else { me.openSocket(); } 
     }
-  }
-  , closeSocket = function() { if(socket) { socket.close(); } }
-  , openSocket = function() {
-     if(isOpen()) {
-       alert('socket already open');
-       return;
-     }
-     createSocket(host);
-  }
-  , toggleConnection = function() { if(isOpen()) { closeSocket(); } else { openSocket(); } };
+  };
+  CC.createSocket(CC.host);
 
-  createSocket(host);
-
-  jq("#tooglr").click(function(e){
-    e.preventDefault();
-    toggleConnection();
-    return false;
-  });
-})(jQuery);
+  // $("#tooglr").click(function(e){
+  //   e.preventDefault();
+  //   CC.toggleConnection();
+  //   return false;
+  // });
+});
     </script>
   </body>
 </html>
