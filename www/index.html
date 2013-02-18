@@ -40,6 +40,9 @@
         padding: 0 .2em;
         border-radius: 6px;
       }
+      a:hover {
+        text-decoration:underline;
+      }
     </style>
     <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   </head>
@@ -48,8 +51,9 @@
     <div id="debug"></div>
     <script type="text/javascript">
 $(document).ready(function() {
-  var CC = {
+  CC = {
     host: "ws://localhost:5679/",
+    next_id: 0,
     supported: function() {
       return window.WebSocket || window.MozWebSocket;
     },
@@ -77,7 +81,12 @@ $(document).ready(function() {
       var kind = msg.shift();
       var who = msg.shift();
       var what =  msg.join("|");
-      $('ul').first().prepend(['<li class="',kind,'"><div class="who">',who,'</div> <div class="msg">', what, '</div></li>'].join(""));
+      var id = "li-" + CC.next_id;
+      CC.next_id = CC.next_id + 1;
+      $('ul').first().prepend(['<li class="',kind,'" id="',id,'"><div class="who"><a onclick="CC.removeItem(\'#',id,'\')">',who,'</a></div> <div class="msg">', what, '</div></li>'].join(""));
+    },
+    removeItem: function(id) {
+      $(id).remove();
     },
     debug: function(msg) {
       $("#debug").html(msg);
