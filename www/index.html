@@ -5,20 +5,31 @@
     <style type="text/css">
       * { margin:0; padding:0; }
       body {
-        font-size: 24px;
-        font-family: helvetica, sans serif;
-        padding:1em;
-        color:#333;
+        font-size: 36px;
+        font-family: Helvetica, arial, sans-serif;
+        padding: 1em;
+        color: black;
+        background-color: #F8F8F8;
       }
       #debug {
         font-size: 16px;
-        color:#ccc;
+        color: #ccc;
+        clear: both;
       }
       ul {
         list-style: none;
       }
       .who {
-        color:#FF00C3;
+        color: #4183C4;
+        font-size: 24px;
+        width: 200px;
+        float: left;
+        text-align: right;
+        margin-right: 1em;
+      }
+      .msg {
+        float: left;
+        width: 600px;
       }
     </style>
     <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -42,7 +53,7 @@ $(document).ready(function() {
          window.socket = me.socket = me.newWebSocket(uri);
          me.socket.onmessage = me.onSocketMessage;
          me.socket.onopen = function(e) {
-           me.debug('connection open')
+           me.debug('connection open');
          }
          me.socket.onclose = function(e) {
            me.debug('connection closed');
@@ -56,7 +67,7 @@ $(document).ready(function() {
       var msg = e.data.split("|");
       var who = msg.shift();
       var what =  msg.join("|");
-      $('ul').first().prepend(['<li><span class="who">',who,'</span> ', what, '</li>'].join(""));
+      $('ul').first().prepend(['<li><div class="who">',who,'</div> <div class="msg">', what, '</div></li>'].join(""));
     },
     debug: function(msg) {
       $("#debug").html(msg);
