@@ -3,7 +3,7 @@ package com.eed3si9n.cc
 import akka.actor._
 import akka.util.duration._
 import akka.dispatch.Future
-import unfiltered.netty.websockets.{WebSocket, Text, Binary, Msg}
+import unfiltered.netty.websockets.{WebSocket, Text, Binary}
 import collection.mutable
 import java.nio.channels.ClosedChannelException
 
@@ -31,13 +31,17 @@ case class SocketActor(socket: WebSocket) extends Actor {
   }
 }
 
+case class Notice(source: String, screenName: String, profileImageUrl: String, status: String) {
+  def toText: Text =
+    Text("%s|%s|%s|%s".format(source, screenName, profileImageUrl, status))
+}
 case class BroadcastActor() extends Actor {
   def sockets = Actor.registry.actorsFor[SocketActor] filter {_.isRunning}
   def receive = {
-    case msg: Msg =>
+    case notice: Notice =>
       sockets foreach { socket =>
         try {
-          socket ! msg
+          socket ! notice.toText
         }
         catch {
           case e: ActorInitializationException => e.printStackTrace
@@ -60,7 +64,7 @@ case class TweetActor(bcast: ActorRef) extends Actor {
           // skip the retweets and already seen ones
           if (!s.status.startsWith("RT ") &&  !seen.contains(s.id)) {
             seen += s.id
-            bcast ! Text("twitter|" + s.screenName + "|" + s.profileImageUrl + "|" + s.status)
+            bcast ! Notice("twitter", s.screenName, s.profileImageUrl, s.status)
           } // if
         }
       } getOrElse {
@@ -88,7 +92,7 @@ case class IrcActor(encoding: String, nickName: String, userName: String,
     case x => println("received unknown message" + x.toString)
   }
   override def onMessage(message: irc.Message) {
-    bcast ! Text("irc|" + message.nickName + "|_|" + message.text)
+    bcast ! Notice("irc", message.nickName, "_", message.text)
   }
   override def postStop() {
     disconnect
