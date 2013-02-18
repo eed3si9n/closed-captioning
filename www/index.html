@@ -5,7 +5,7 @@
     <style type="text/css">
       * { margin:0; padding:0; }
       body {
-        font-size: 36px;
+        font-size: 40px;
         font-family: Helvetica, arial, sans-serif;
         padding: 1em;
         color: black;
@@ -19,9 +19,12 @@
       ul {
         list-style: none;
       }
+      li {
+        clear: both;
+      }
       .who {
         color: #4183C4;
-        font-size: 24px;
+        font-size: 60%;
         width: 200px;
         float: left;
         text-align: right;
@@ -36,12 +39,19 @@
         background-color: #f8f8ff;
         color: #444;
         border: 1px solid #cccccc;
-        font-size: 24px;
+        font-size: 80%;
         padding: 0 .2em;
         border-radius: 6px;
       }
       a:hover {
         text-decoration:underline;
+      }
+      .avatar {
+        width: 1.5em;
+        height: 1.5em;
+        margin-right: 0.4em;
+        vertical-align: top;
+        border-radius: 3px;
       }
     </style>
     <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -80,10 +90,15 @@ $(document).ready(function() {
       var msg = e.data.split("|");
       var kind = msg.shift();
       var who = msg.shift();
+      var img_url = msg.shift();
       var what =  msg.join("|");
       var id = "li-" + CC.next_id;
       CC.next_id = CC.next_id + 1;
-      $('ul').first().prepend(['<li class="',kind,'" id="',id,'"><div class="who"><a onclick="CC.removeItem(\'#',id,'\')">',who,'</a></div> <div class="msg">', what, '</div></li>'].join(""));
+      var img = '';
+      if (img_url !== '_') {
+        img = '<img src="' + img_url + '" class="avatar" />';
+      } // if
+      $('ul').first().prepend(['<li class="',kind,'" id="',id,'"><div class="who"><a onclick="CC.removeItem(\'#',id,'\')">',img,who,'</a></div> <div class="msg">', what, '</div></li>'].join(""));
     },
     removeItem: function(id) {
       $(id).remove();

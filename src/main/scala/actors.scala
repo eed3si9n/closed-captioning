@@ -64,7 +64,7 @@ case class TweetActor() extends Actor with BroadcastActor {
           // skip the retweets and already seen ones
           if (!s.status.startsWith("RT ") &&  !seen.contains(s.id)) {
             seen += s.id
-            broadcast(Text("twitter|" + s.screenName + "|" + s.status))
+            broadcast(Text("twitter|" + s.screenName + "|" + s.profileImageUrl + "|" + s.status))
           } // if
         }
       } getOrElse {
@@ -91,7 +91,7 @@ case class IrcActor(encoding: String, nickName: String, userName: String,
     case _      => // log.info("received unknown message")
   }
   override def onMessage(message: irc.Message) {
-    broadcast(Text("irc|" + message.nickName + "|" + message.text))
+    broadcast(Text("irc|" + message.nickName + "|_|" + message.text))
   }
   override def postStop() {
     disconnect

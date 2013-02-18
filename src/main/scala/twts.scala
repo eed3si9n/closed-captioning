@@ -29,7 +29,8 @@ case class Twt {
       id = Search.id(item)
       msg = Search.text(item)
       from_user = Search.from_user(item)
-    } yield StatusResponse(id, msg, from_user)
+      profile_image_url = Search.profile_image_url(item)
+    } yield StatusResponse(id, msg, from_user, profile_image_url)
   }
 
   def anonymousGrep(q: String, count: BigDecimal): Seq[StatusResponse] = {
@@ -38,7 +39,8 @@ case class Twt {
       id = Search.id(item)
       msg = Search.text(item)
       from_user = Search.from_user(item)
-    } yield StatusResponse(id, msg, from_user)
+      profile_image_url = Search.profile_image_url(item)
+    } yield StatusResponse(id, msg, from_user, profile_image_url)
   }
 
   def formatTweet(id: BigDecimal, status: String, screenName: String): List[String] =
@@ -47,7 +49,7 @@ case class Twt {
     "" :: Nil
 }
 
-case class StatusResponse(id: BigDecimal, status: String, screenName: String)
+case class StatusResponse(id: BigDecimal, status: String, screenName: String, profileImageUrl: String)
 
 class TwtConfig(fileName: File) {
   import scala.collection.mutable

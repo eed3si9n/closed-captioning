@@ -49,6 +49,7 @@ object Search extends Js {
   val created_at = 'created_at ? str
   val iso_language_code = 'iso_language_code ? str
   val from_user = 'from_user ? str
+  val profile_image_url = 'profile_image_url ? str
 }
 
 object Status extends Request(Twitter.host / "1" / "statuses") {
