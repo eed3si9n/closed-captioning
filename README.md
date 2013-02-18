@@ -5,6 +5,8 @@ closed-captioning is a tweet + IRC aggregator, intended for conference talks. th
 
 hashtag is a fun way of getting audience feedback, but it's not meant to be reliable or responsive, partially due to twitter's hourly API limits.　IRC on the other hand, while not as accessible as twitter, is more reliable and responsive.
 
+![screenshot](https://raw.github.com/eed3si9n/closed-captioning/master/screenshot.png)
+
 how to setup closed-captioning
 ------------------------------
 
