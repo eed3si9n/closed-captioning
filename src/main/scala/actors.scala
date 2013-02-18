@@ -61,7 +61,8 @@ case class TweetActor() extends Actor with BroadcastActor {
       twt.auth_token map { t =>
         val statuses = twt.grep(q, count)(t)
         statuses map { s =>
-          if (!seen.contains(s.id)) {
+          // skip the retweets and already seen ones
+          if (!s.status.startsWith("RT ") &&  !seen.contains(s.id)) {
             seen += s.id
             broadcast(Text("twitter|" + s.screenName + "|" + s.status))
           } // if
