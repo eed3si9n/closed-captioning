@@ -63,7 +63,7 @@ case class TweetActor() extends Actor with BroadcastActor {
         statuses map { s =>
           if (!seen.contains(s.id)) {
             seen += s.id
-            broadcast(Text(s.screenName + "|" + s.status))
+            broadcast(Text("twitter|" + s.screenName + "|" + s.status))
           } // if
         }
       } getOrElse {
@@ -90,7 +90,7 @@ case class IrcActor(encoding: String, nickName: String, userName: String,
     case _      => // log.info("received unknown message")
   }
   override def onMessage(message: irc.Message) {
-    broadcast(Text(message.nickName + "|" + message.text))
+    broadcast(Text("irc|" + message.nickName + "|" + message.text))
   }
   override def postStop() {
     disconnect

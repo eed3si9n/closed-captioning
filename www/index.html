@@ -30,6 +30,15 @@
       .msg {
         float: left;
         width: 600px;
+        margin-bottom: 10px;
+      }
+      .twitter .msg {
+        background-color: #f8f8ff;
+        color: #444;
+        border: 1px solid #cccccc;
+        font-size: 24px;
+        padding: 0 .2em;
+        border-radius: 6px;
       }
     </style>
     <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -65,9 +74,10 @@ $(document).ready(function() {
     onSocketMessage: function(e) {
       var me = this;
       var msg = e.data.split("|");
+      var kind = msg.shift();
       var who = msg.shift();
       var what =  msg.join("|");
-      $('ul').first().prepend(['<li><div class="who">',who,'</div> <div class="msg">', what, '</div></li>'].join(""));
+      $('ul').first().prepend(['<li class="',kind,'"><div class="who">',who,'</div> <div class="msg">', what, '</div></li>'].join(""));
     },
     debug: function(msg) {
       $("#debug").html(msg);
