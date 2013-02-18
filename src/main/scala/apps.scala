@@ -25,6 +25,7 @@ object App {
       setting.irc.hostname, setting.irc.port, setting.irc.channel
     )).start()
     timeractor ! StartTimer
+    println("ready!")
 
     unfiltered.netty.Http(setting.websocket.port).handler(unfiltered.netty.websockets.Planify({
       case _ => {
