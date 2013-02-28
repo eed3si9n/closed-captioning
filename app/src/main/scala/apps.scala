@@ -8,13 +8,17 @@ object App {
   import akka.actor.Actor._
   import akka.util.duration._
   import com.typesafe.config.ConfigFactory
+  import grizzled.slf4j._
 
   implicit val timeout = Timeout(100 millisecond)
 
   def socketActorName(s: WebSocket): String = "socketactor" + s.channel.getId.toString
     
   def main(args: Array[String]) {
+    val logger = Logger("App")
     val setting = new CCSetting(ConfigFactory.load())
+
+    logger.info("start")
 
     val broadcastactor = actorOf(BroadcastActor()).start()
     val tweetactor = actorOf(TweetActor(broadcastactor)).start()

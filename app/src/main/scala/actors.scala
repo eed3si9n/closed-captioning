@@ -35,14 +35,17 @@ case class SocketActor(socket: WebSocket) extends Actor {
 case class Notice(source: String, screenName: String, profileImageUrl: String, status: String) {
   def toText: Text =
     Text("%s|%s|%s|%s".format(source, screenName, profileImageUrl, status))
+  def toLogString: String = "%s|%s|%s".format(source, screenName, status)
 }
 case class BroadcastActor() extends Actor {
+  val logger = Logger(classOf[BroadcastActor])
   def sockets = Actor.registry.actorsFor[SocketActor] filter {_.isRunning}
   def receive = {
     case notice: Notice =>
       sockets foreach { socket =>
         try {
           socket ! notice.toText
+          logger.info(notice.toLogString)
         }
         catch {
           case e: ActorInitializationException => e.printStackTrace
