@@ -23,7 +23,8 @@ object App {
       setting.twitter.interval, tweetactor)).start()
     val ircactor = actorOf(IrcActor(
       setting.irc.encoding, setting.irc.nickname, setting.irc.username,
-      setting.irc.hostname, setting.irc.port, setting.irc.channel,
+      setting.irc.hostname, setting.irc.port, setting.irc.use_ssl,
+      setting.irc.channel,
       broadcastactor
     )).start()
     timeractor ! StartTimer

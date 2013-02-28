@@ -8,6 +8,7 @@ closed-captioning {
     username = "your_bot_name"
     hostname = "irc.freenode.net"
     port = 6667
+    use_ssl = false
     encoding = "UTF-8"
     channel = "##your_channel"
   }

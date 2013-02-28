@@ -6,6 +6,7 @@ import akka.dispatch.Future
 import unfiltered.netty.websockets.{WebSocket, Text, Binary}
 import collection.mutable
 import java.nio.channels.ClosedChannelException
+import grizzled.slf4j._
 
 // http://docs.jboss.org/netty/3.2/api/org/jboss/netty/channel/Channel.html
 case class SocketActor(socket: WebSocket) extends Actor {
@@ -86,7 +87,7 @@ case class TimerActor(q: String, count: Int, intervalMSec: Long, tweet: ActorRef
 }
 
 case class IrcActor(encoding: String, nickName: String, userName: String,
-  hostName: String, port: Int, channel: String, bcast: ActorRef) extends Actor with irc.IrcClient {
+  hostName: String, port: Int, useSsl: Boolean, channel: String, bcast: ActorRef) extends Actor with irc.IrcClient {
   joinChannel(channel)
   def receive = {
     case x => println("received unknown message" + x.toString)

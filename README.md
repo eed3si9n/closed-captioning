@@ -36,7 +36,8 @@ closed-captioning {
     nickname = "your_bot_name"
     username = "your_bot_name"
     hostname = "irc.freenode.net"
-    port = 6667
+    port = 6667 # or 7000
+    use_ssl = false # or true
     encoding = "UTF-8"
     channel = "##your_channel"
   }
@@ -59,6 +60,7 @@ using your favorite IRC client, join the specified channel as yourself.
 
 run `re-start` from sbt shell to start the websocket server in the background:
 
+    > project closed-captioning
     > re-start
     [info] Application not yet started
     [info] Starting application in the background ...

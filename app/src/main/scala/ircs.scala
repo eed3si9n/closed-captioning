@@ -12,6 +12,7 @@ trait IrcClient { self =>
   def userName: String
   def hostName: String
   def port: Int
+  def useSsl: Boolean
 
   def isConnected: Boolean = underlying.isConnected
   def connect() {
@@ -50,13 +51,14 @@ trait IrcClient { self =>
     setEncoding(encoding)
     setName(nickName)
     setLogin(userName)
+    setUseSSL(useSsl)
     
     override protected def onMessage(channel: String, sender: String, login: String, hostname: String, message: String) = {
       self.onMessage(Message(channel, sender, login, hostname, message, new Date))
     }
 
-    override protected def onPrivateMessage(sender: String, login: String, hostname: String, message: String) = {
-      self.onPrivateMessage(PrivateMessage(sender, login, hostname, message, new Date))
+    override protected def onPrivateMessage(sender: String, login: String, hostname: String, target: String, message: String) = {
+      self.onPrivateMessage(PrivateMessage(sender, login, hostname, target, message, new Date))
     }
 
     override protected def onNotice(sourceNick: String, sourceLogin: String, sourceHostname: String, target: String, notice: String) = {
@@ -135,6 +137,7 @@ case class PrivateMessage(
   nickName: String,
   userName: String,
   hostName: String,
+  target: String,
   text: String,
   override val date: Date
 ) extends Event

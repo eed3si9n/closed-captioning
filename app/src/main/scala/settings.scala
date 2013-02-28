@@ -18,6 +18,7 @@ class CCSetting(config: Config) {
     val username = c.getString("username")
     val hostname = c.getString("hostname")
     val port = c.getInt("port")
+    val use_ssl = c.getBoolean("use_ssl")
     val encoding = c.getString("encoding")
     val channel = c.getString("channel")
   }
