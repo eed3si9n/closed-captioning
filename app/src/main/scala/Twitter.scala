@@ -8,8 +8,8 @@ import oauth.OAuth._
 import dispatch.Request._
 
 object Twitter {
-  val host = :/("api.twitter.com")
-  val search = :/("search.twitter.com")
+  val host = :/("api.twitter.com").secure
+  // val search = :/("api.twitter.com") / "1.1" / "search"
 }
 
 object Search extends Js {
@@ -35,9 +35,9 @@ object Search extends Js {
     def product = 
       (cns, tkn) match {
         case (Some(consumer), Some(token)) =>  
-          Twitter.search / "search.json" <<? params <@ (consumer, token) <:< headers ># ('results ! (list ! obj))
+          Twitter.host / "1.1" / "search" / "tweets.json" <<? params <@ (consumer, token) <:< headers ># ('statuses ! (list ! obj))
         case _ =>
-          Twitter.search / "search.json" <<? params <:< headers ># ('results ! (list ! obj))
+          Twitter.host / "1.1" / "search" / "tweets.json" <<? params <:< headers ># ('statuses ! (list ! obj))
       }    
   }
 
@@ -50,9 +50,11 @@ object Search extends Js {
   val iso_language_code = 'iso_language_code ? str
   val from_user = 'from_user ? str
   val profile_image_url = 'profile_image_url ? str
+
+  def rebracket(status: String) = status replace ("&gt;", ">") replace ("&lt;", "<")
 }
 
-object Status extends Request(Twitter.host / "1" / "statuses") {
+object Status extends Request(Twitter.host / "1.1" / "statuses") {
   private def public_timeline = this / "public_timeline.json" ># (list ! obj)
 
   def friends_timeline(consumer: Consumer, token: Token, params: (String, String)*) =
@@ -75,8 +77,7 @@ object Status extends Request(Twitter.host / "1" / "statuses") {
 
   val text = 'text ? str
   val id = 'id ? num
-  val user = new Obj('user) with UserProps // Obj assigns context to itself
-
+  val user = 'user ? obj
   def rebracket(status: String) = status replace ("&gt;", ">") replace ("&lt;", "<")
 }
 
@@ -86,18 +87,17 @@ case class Status(user_id: String) extends
   def timeline = this ># (list ! obj)
 }
 
-object User extends UserProps with Js // Js assigns context of None
-
-trait UserProps {
-  // undefined local context for `?` to allow Obj / Js to assign themselves
-  implicit val ctx: Option[Obj]
+object User {
   val followers_count = 'followers_count ? num
   val screen_name = 'screen_name ? str
+  val profile_image_url = 'profile_image_url ? str
 }
 
 case class User(user: String) extends
     Request(Twitter.host / "users" / "show" / (user + ".json")) with Js {
 
+  val screen_name = 'screen_name ? str
+  val profile_image_url = 'profile_image_url ? str
   def show = this ># obj
 }
 
@@ -116,3 +116,4 @@ object RateLimitStatus extends Js {
   val hourly_limit = 'hourly_limit ? num
   val reset_time = 'reset_time ? str
 }
+

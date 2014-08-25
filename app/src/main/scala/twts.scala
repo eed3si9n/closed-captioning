@@ -13,7 +13,7 @@ case class Twt {
   // import all the methods, including implicit conversions, defined on dispatch.Http
   import Http._
 
-  val home = :/("twitter.com")
+  val home = :/("twitter.com").secure
   // OAuth application key, top-secret
   val consumer = Consumer("Km1qVJOqYKDtFhlx6W6s3Q", "rgru7uaRGGm2fhrDrti4m8H5b8YliiohQyBcM17gBg")
   // one single-threaded http access point, please!
@@ -26,10 +26,11 @@ case class Twt {
   def grep(q: String, count: BigDecimal)(implicit token: Token): Seq[StatusResponse] = {
     for {
       item <- http(Search(consumer, token, q, ("show_user", "true"), ("rpp", count.toString)))
-      id = Search.id(item)
-      msg = Search.text(item)
-      from_user = Search.from_user(item)
-      profile_image_url = Search.profile_image_url(item)
+      id = Status.id(item)
+      msg = Status.text(item)
+      user = Status.user(item)
+      from_user = User.screen_name(user)
+      profile_image_url = User.profile_image_url(user)
     } yield StatusResponse(id, msg, from_user, profile_image_url)
   }
 
@@ -45,7 +46,7 @@ case class Twt {
 
   def formatTweet(id: BigDecimal, status: String, screenName: String): List[String] =
     "* %-22s %s".format("<" + screenName + ">", id.toString) ::
-    "- " + Status.rebracket(status) ::
+    "- " + Search.rebracket(status) ::
     "" :: Nil
 }
 
